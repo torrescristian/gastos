@@ -8,6 +8,6 @@ const useCase = new ListCategoriesUseCase(new LocalCategoriesRepository());
 export const useCategoriesQuery = () => {
   return useQuery({
     queryKey: [CATEGORIES_KEY],
-    queryFn: useCase.execute,
+    queryFn: () => useCase.execute(),
   });
 };

@@ -1,200 +1,528 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Switch, Transition, Dialog } from "@headlessui/react";
+import React, { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Switch,
+  Transition,
+  Listbox,
+  ListboxButton,
+  ListboxOptions,
+  ListboxOption,
+} from "@headlessui/react";
+import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/20/solid";
 
-import { Category, Subcategory } from "@/expenses/domain/entities/Category";
 import { useCategoriesQuery } from "@/expenses/infrastructure/react-adapters/useCategoriesQuery";
-
-import NumericKeyboardModal from "../molecules/NumericKeyboardModal";
+import { useCreateExpenseMutation } from "@/expenses/infrastructure/react-adapters/useCreateExpenseMutation";
+import {
+  ExpenseFormSchema,
+  ExpenseFormData,
+} from "@/expenses/domain/schemas/ExpenseSchema";
 
 const ExpenseRegistrationForm: React.FC = () => {
-  const [amount, setAmount] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
-  const [selectedSubcategory, setSelectedSubcategory] =
-    useState<Subcategory | null>(null);
-  const [isCardPayment, setIsCardPayment] = useState<boolean>(false);
-  const [showSubcategories, setShowSubcategories] = useState<boolean>(false);
-  const [showNumericKeyboard, setShowNumericKeyboard] =
-    useState<boolean>(false);
-  const subcategoryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ExpenseFormData>({
+    resolver: zodResolver(ExpenseFormSchema),
+    defaultValues: {
+      amount: "",
+      categoryId: "",
+      subcategoryId: "",
+      isCardPayment: false,
+      note: "",
+    },
+    mode: "onChange",
+  });
+
+  const watchedCategoryId = watch("categoryId") || "";
+  const watchedSubcategoryId = watch("subcategoryId") || "";
 
   // Usar react-query para obtener las categorías
-  const { data: categories = [], isLoading } = useCategoriesQuery();
+  const { data: categories = [], isLoading, error } = useCategoriesQuery();
+
+  // Mutation para crear gastos
+  const createExpenseMutation = useCreateExpenseMutation();
+
+  // Encontrar la categoría seleccionada
+  const selectedCategory =
+    categories.find((cat) => cat.id.toString() === watchedCategoryId) || null;
+  const selectedSubcategory =
+    selectedCategory?.subcategories.find(
+      (sub) => sub.id.toString() === watchedSubcategoryId
+    ) || null;
+
+  // Mostrar subcategorías si hay una categoría seleccionada con subcategorías
+  const showSubcategories = Boolean(
+    selectedCategory && selectedCategory.subcategories.length > 0
+  );
 
   useEffect(() => {
-    if (selectedCategory && selectedCategory.subcategories.length > 0) {
-      setShowSubcategories(true);
-
-      // Set timer for 3 seconds
-      subcategoryTimerRef.current = setTimeout(() => {
-        setShowSubcategories(false);
-      }, 3000);
-    } else {
-      setShowSubcategories(false);
+    // Limpiar subcategoría cuando cambia la categoría
+    if (watchedCategoryId && selectedCategory?.subcategories.length === 0) {
+      setValue("subcategoryId", "");
     }
-
-    return () => {
-      if (subcategoryTimerRef.current) {
-        clearTimeout(subcategoryTimerRef.current);
-      }
-    };
-  }, [selectedCategory]);
-
-  const handleCategorySelect = (category: Category) => {
-    if (selectedCategory?.id === category.id) {
-      setSelectedCategory(null);
-      setSelectedSubcategory(null);
-    } else {
-      setSelectedCategory(category);
-      setSelectedSubcategory(null);
+    // Si no hay categoría seleccionada, limpiar subcategoría también
+    if (!watchedCategoryId) {
+      setValue("subcategoryId", "");
     }
-  };
+  }, [watchedCategoryId, selectedCategory, setValue]);
 
-  const handleSubcategorySelect = (subcategory: Subcategory) => {
-    setSelectedSubcategory(subcategory);
-    setShowSubcategories(false);
-    if (subcategoryTimerRef.current) {
-      clearTimeout(subcategoryTimerRef.current);
+  const onSubmit = async (data: ExpenseFormData) => {
+    try {
+      const expenseData = {
+        amount: parseFloat(data.amount),
+        categoryId: data.categoryId,
+        subcategoryId:
+          data.subcategoryId && data.subcategoryId.trim() !== ""
+            ? data.subcategoryId
+            : undefined,
+        isCardPayment: data.isCardPayment,
+        note: data.note && data.note.trim() !== "" ? data.note : undefined,
+        date: new Date(),
+      };
+
+      await createExpenseMutation.mutateAsync(expenseData);
+
+      // Reset form on success
+      reset({
+        amount: "",
+        categoryId: "",
+        subcategoryId: "",
+        isCardPayment: false,
+        note: "",
+      });
+
+      // TODO: Show success message or redirect
+      alert("¡Gasto registrado exitosamente!");
+    } catch (error) {
+      console.error("Error creating expense:", error);
+      // TODO: Show error message
+      alert("Error al registrar el gasto. Intenta nuevamente.");
     }
-  };
-
-  const handleSaveExpense = () => {
-    if (!amount || !selectedCategory) return;
-
-    const expenseData = {
-      amount: parseFloat(amount),
-      categoryId: selectedCategory.id,
-      subcategoryId: selectedSubcategory?.id,
-      isCardPayment,
-      date: new Date(),
-    };
-
-    console.log("Saving expense:", expenseData);
-    // TODO: Implement actual save logic with your domain services
-
-    // Reset form
-    setAmount("");
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
-    setIsCardPayment(false);
   };
 
   if (isLoading) {
-    return <div className="text-center text-white">Cargando categorías...</div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+          <p>Cargando categorías...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center text-white">
+          <div className="text-red-400 text-2xl mb-2">⚠️</div>
+          <p>Error al cargar categorías</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {error instanceof Error ? error.message : "Error desconocido"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!categories || categories.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center text-white">
+          <div className="text-yellow-400 text-2xl mb-2">📂</div>
+          <p>No hay categorías disponibles</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-lg p-4">
-      {/* Amount and Payment Method Row */}
-      <div className="flex items-center mb-6">
-        <div className="flex-grow mr-4">
-          <input
-            type="text"
-            className="w-full text-4xl p-3 bg-gray-700 text-white rounded-lg text-right"
-            placeholder="0.00"
-            value={amount}
-            readOnly
-            onClick={() => setShowNumericKeyboard(true)}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Amount Input Section */}
+      <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
+        <div className="text-center">
+          <label className="text-gray-400 text-sm block mb-2">Monto</label>
+          <Controller
+            name="amount"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                className="w-full text-5xl p-4 bg-transparent text-white text-center border-none outline-none"
+                placeholder="0"
+              />
+            )}
           />
-        </div>
-
-        <div className="flex flex-col items-center">
-          <label className="text-white text-xs mb-1">Tarjeta</label>
-          <Switch
-            checked={isCardPayment}
-            onChange={setIsCardPayment}
-            className={`${
-              isCardPayment ? "bg-green-500" : "bg-red-500"
-            } relative inline-flex h-8 w-14 items-center rounded-full`}
-          >
-            <span className="sr-only">Método de pago</span>
-            <span
-              className={`${
-                isCardPayment ? "translate-x-7" : "translate-x-1"
-              } inline-block h-6 w-6 rounded-full bg-white transition-transform`}
-            >
-              {isCardPayment ? "✅" : "❌"}
-            </span>
-          </Switch>
+          {errors.amount && (
+            <p className="text-red-400 text-sm mt-2">{errors.amount.message}</p>
+          )}
         </div>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        {categories.slice(0, 6).map((category: Category) => (
-          <button
-            key={category.id}
-            onClick={() => handleCategorySelect(category)}
-            className={`p-4 rounded-lg flex flex-col items-center justify-center ${
-              selectedCategory?.id === category.id
-                ? "bg-blue-600 text-white"
-                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            }`}
-          >
-            <span className="text-3xl mb-2">{category.icon}</span>
-            <span className="text-sm">{category.name}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Subcategories Panel (Conditional) */}
-      <Transition
-        show={showSubcategories && !!selectedCategory?.subcategories.length}
-        enter="transition-opacity duration-300"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition-opacity duration-300"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <div className="bg-gray-700 p-3 rounded-lg mb-6">
-          <h3 className="text-white text-sm mb-2">
-            Subcategoría para {selectedCategory?.name}:
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {selectedCategory?.subcategories.map((subcat) => (
-              <button
-                key={subcat.id}
-                onClick={() => handleSubcategorySelect(subcat)}
-                className="bg-gray-600 hover:bg-gray-500 text-white p-2 rounded text-sm"
-              >
-                {subcat.name}
-              </button>
-            ))}
+      {/* Payment Method Toggle */}
+      <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <span className="text-white font-medium">Método de Pago</span>
           </div>
+
+          <div className="flex items-center space-x-3">
+            <Controller
+              name="isCardPayment"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <span
+                    className={`text-sm font-medium transition-colors ${
+                      !field.value ? "text-white" : "text-gray-400"
+                    }`}
+                  >
+                    Contado
+                  </span>
+                  <Switch
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className={`${
+                      field.value
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600"
+                        : "bg-gray-600"
+                    } relative inline-flex h-7 w-12 items-center rounded-full transition-colors`}
+                  >
+                    <span className="sr-only">Método de pago</span>
+                    <span
+                      className={`${
+                        field.value ? "translate-x-6" : "translate-x-1"
+                      } inline-block h-5 w-5 rounded-full bg-white transition-transform`}
+                    />
+                  </Switch>
+                  <span
+                    className={`text-sm font-medium transition-colors ${
+                      field.value ? "text-white" : "text-gray-400"
+                    }`}
+                  >
+                    Tarjeta
+                  </span>
+                </>
+              )}
+            />
+          </div>
+        </div>
+        {errors.isCardPayment && (
+          <p className="text-red-400 text-sm mt-2">
+            {errors.isCardPayment.message}
+          </p>
+        )}
+      </div>
+
+      {/* Categories Dropdown */}
+      <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
+        <h3 className="text-white font-semibold mb-4">Categoría</h3>
+        <Controller
+          name="categoryId"
+          control={control}
+          render={({ field }) => (
+            <Listbox
+              value={field.value || ""}
+              onChange={(value) => {
+                field.onChange(value || "");
+                // Clear subcategory when category changes
+                setValue("subcategoryId", "");
+              }}
+            >
+              <div className="relative">
+                <ListboxButton className="relative w-full cursor-default rounded-lg bg-gray-700 py-3 pl-4 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                  <span className="flex items-center">
+                    {selectedCategory ? (
+                      <>
+                        <span className="text-xl mr-3">
+                          {selectedCategory.icon}
+                        </span>
+                        <span className="block truncate text-white font-medium">
+                          {selectedCategory.name}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="block truncate text-gray-400">
+                        Selecciona una categoría
+                      </span>
+                    )}
+                  </span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronUpDownIcon
+                      className="h-5 w-5 text-gray-400"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </ListboxButton>
+                <Transition
+                  leave="transition ease-in duration-100"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                    {categories.map((category) => (
+                      <ListboxOption
+                        key={category.id}
+                        className={({ selected }) =>
+                          `relative cursor-default select-none py-3 pl-4 pr-10 ${
+                            selected
+                              ? "bg-gray-600 text-white"
+                              : "text-gray-200"
+                          }`
+                        }
+                        value={category.id.toString()}
+                      >
+                        {({ selected }) => (
+                          <>
+                            <div className="flex items-center">
+                              <span className="text-xl mr-3">
+                                {category.icon}
+                              </span>
+                              <span
+                                className={`block truncate ${
+                                  selected ? "font-medium" : "font-normal"
+                                }`}
+                              >
+                                {category.name}
+                              </span>
+                            </div>
+                            {selected ? (
+                              <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-400">
+                                <CheckIcon
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
+                              </span>
+                            ) : null}
+                          </>
+                        )}
+                      </ListboxOption>
+                    ))}
+                  </ListboxOptions>
+                </Transition>
+              </div>
+            </Listbox>
+          )}
+        />
+        {errors.categoryId && (
+          <p className="text-red-400 text-sm mt-2">
+            {errors.categoryId.message}
+          </p>
+        )}
+      </div>
+
+      {/* Subcategories Dropdown */}
+      <Transition
+        show={showSubcategories}
+        enter="transition-all duration-300 ease-out"
+        enterFrom="opacity-0 -translate-y-2"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition-all duration-200 ease-in"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 -translate-y-2"
+      >
+        <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700 border-l-4 border-l-blue-500">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-semibold">
+              Subcategoría de {selectedCategory?.name}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setValue("subcategoryId", "")}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+
+          <Controller
+            name="subcategoryId"
+            control={control}
+            render={({ field }) => (
+              <Listbox
+                value={field.value || ""}
+                onChange={(value) => field.onChange(value || "")}
+              >
+                <div className="relative">
+                  <ListboxButton className="relative w-full cursor-default rounded-lg bg-gray-700 py-3 pl-4 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                    <span className="flex items-center">
+                      {selectedSubcategory ? (
+                        <>
+                          <span className="text-lg mr-3">
+                            {selectedSubcategory.icon}
+                          </span>
+                          <span className="block truncate text-white font-medium">
+                            {selectedSubcategory.name}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="block truncate text-gray-400">
+                          Selecciona una subcategoría (opcional)
+                        </span>
+                      )}
+                    </span>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronUpDownIcon
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </ListboxButton>
+                  <Transition
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {selectedCategory?.subcategories.map((subcategory) => (
+                        <ListboxOption
+                          key={subcategory.id}
+                          className={({ selected }) =>
+                            `relative cursor-default select-none py-3 pl-4 pr-10 ${
+                              selected
+                                ? "bg-gray-600 text-white"
+                                : "text-gray-200"
+                            }`
+                          }
+                          value={subcategory.id.toString()}
+                        >
+                          {({ selected }) => (
+                            <>
+                              <div className="flex items-center">
+                                <span className="text-lg mr-3">
+                                  {subcategory.icon}
+                                </span>
+                                <span
+                                  className={`block truncate ${
+                                    selected ? "font-medium" : "font-normal"
+                                  }`}
+                                >
+                                  {subcategory.name}
+                                </span>
+                              </div>
+                              {selected ? (
+                                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-green-400">
+                                  <CheckIcon
+                                    className="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </ListboxOption>
+                      ))}
+                    </ListboxOptions>
+                  </Transition>
+                </div>
+              </Listbox>
+            )}
+          />
+          {errors.subcategoryId && (
+            <p className="text-red-400 text-sm mt-2">
+              {errors.subcategoryId.message}
+            </p>
+          )}
         </div>
       </Transition>
 
+      {/* Note Field (Optional) */}
+      <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
+        <h3 className="text-white font-semibold mb-4">Nota (opcional)</h3>
+        <Controller
+          name="note"
+          control={control}
+          render={({ field }) => (
+            <textarea
+              {...field}
+              className="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+              rows={3}
+              placeholder="Agregar una nota sobre este gasto..."
+            />
+          )}
+        />
+        {errors.note && (
+          <p className="text-red-400 text-sm mt-2">{errors.note.message}</p>
+        )}
+      </div>
+
+      {/* Selected Items Summary */}
+      {(watch("amount") || selectedCategory || selectedSubcategory) && (
+        <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700 border-l-4 border-l-green-500">
+          <h3 className="text-white font-semibold mb-3">Resumen</h3>
+          <div className="space-y-2 text-sm">
+            {watch("amount") && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Monto:</span>
+                <span className="text-white font-semibold">
+                  ${watch("amount")}
+                </span>
+              </div>
+            )}
+            {selectedCategory && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Categoría:</span>
+                <div className="flex items-center space-x-2">
+                  <span>{selectedCategory.icon}</span>
+                  <span className="text-white">{selectedCategory.name}</span>
+                </div>
+              </div>
+            )}
+            {selectedSubcategory && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Subcategoría:</span>
+                <div className="flex items-center space-x-2">
+                  <span>{selectedSubcategory.icon}</span>
+                  <span className="text-white">{selectedSubcategory.name}</span>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-gray-400">Método de pago:</span>
+              <span
+                className={`font-semibold ${
+                  watch("isCardPayment") ? "text-orange-400" : "text-green-400"
+                }`}
+              >
+                {watch("isCardPayment") ? "💳 Tarjeta" : "💵 Contado"}
+              </span>
+            </div>
+            {watch("note") && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Nota:</span>
+                <span className="text-white text-right max-w-48 truncate">
+                  {watch("note")}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Save Button */}
       <button
-        onClick={handleSaveExpense}
-        disabled={!amount || !selectedCategory}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg disabled:opacity-50"
+        type="submit"
+        disabled={isSubmitting || createExpenseMutation.isPending}
+        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100"
       >
-        Registrar Gasto
+        {isSubmitting || createExpenseMutation.isPending ? (
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <span>Registrando...</span>
+          </div>
+        ) : (
+          "Registrar Gasto"
+        )}
       </button>
-
-      {/* Numeric Keyboard Modal */}
-      <Dialog
-        open={showNumericKeyboard}
-        onClose={() => setShowNumericKeyboard(false)}
-        className="relative z-50"
-      >
-        <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="bg-gray-800 rounded-lg p-4 w-full max-w-sm">
-            <NumericKeyboardModal
-              value={amount}
-              onChange={setAmount}
-              onConfirm={() => setShowNumericKeyboard(false)}
-            />
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-    </div>
+    </form>
   );
 };
 
