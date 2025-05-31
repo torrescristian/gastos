@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+I use clean architecture (DDD + hexagonal), atomic design and react query (use mutations and queries when needed)
