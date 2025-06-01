@@ -97,23 +97,23 @@ export default function HomePage() {
     <div className="px-4 py-6 min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-white">Mis Gastos</h1>
             <p className="text-gray-400 mt-1">Historial completo de gastos</p>
           </div>
 
           {/* Sync Status */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-shrink-0">
             <div className="text-right">
               <div
                 className={`text-sm ${statusDisplay.color} flex items-center space-x-1`}
               >
                 <span>{statusDisplay.icon}</span>
-                <span>{statusDisplay.text}</span>
+                <span className="whitespace-nowrap">{statusDisplay.text}</span>
               </div>
               {syncState?.lastSync && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 whitespace-nowrap">
                   Última:{" "}
                   {syncState.lastSync.toLocaleTimeString("es-ES", {
                     hour: "2-digit",
@@ -128,7 +128,7 @@ export default function HomePage() {
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
                   isSyncing
                     ? "bg-gray-700 text-gray-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -429,32 +429,34 @@ const ExpenseItem = ({
 
   return (
     <div className="bg-gray-700 rounded-lg p-3 flex items-center hover:bg-gray-600 transition-colors">
-      <div className="rounded-full bg-gray-600 p-2 mr-3">
+      <div className="rounded-full bg-gray-600 p-2 mr-3 flex-shrink-0">
         <span className="text-lg">{icon}</span>
       </div>
-      <div className="flex-1">
+
+      <div className="flex-1 min-w-0">
+        <h4 className="text-white font-medium truncate">{title}</h4>
+        <p className="text-sm text-gray-400 truncate">
+          {category} • {date}
+        </p>
+      </div>
+
+      <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-3">
+        {/* Status and Payment Method Row */}
         <div className="flex items-center space-x-2">
-          <h4 className="text-white font-medium">{title}</h4>
           {isPendingSync && (
-            <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded flex items-center space-x-1">
-              <span>⏳</span>
-              <span>Pendiente</span>
+            <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+              ⏳ Pendiente
+            </span>
+          )}
+          {isCardPayment && (
+            <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+              💳 Tarjeta
             </span>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <p className="text-sm text-gray-400">
-            {category} • {date}
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col items-end space-y-1">
-        {isCardPayment && (
-          <span className="text-xs bg-orange-900/30 text-orange-400 px-2 py-0.5 rounded">
-            💳 Tarjeta
-          </span>
-        )}
-        <span className="text-white font-medium">{amount}</span>
+
+        {/* Amount */}
+        <span className="text-white font-medium text-right">{amount}</span>
       </div>
     </div>
   );

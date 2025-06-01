@@ -56,28 +56,25 @@ const BottomNavigation = () => {
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          <span>Registrar</span>
+          <span>Nuevo</span>
         </NavLink>
       </div>
     </nav>
   );
 };
 
-// Componente auxiliar para los enlaces de navegación
-const NavLink = ({
-  to,
-  children,
-  isActive,
-}: {
+const NavLink: React.FC<{
   to: string;
-  children: React.ReactNode;
   isActive: boolean;
-}) => {
+  children: React.ReactNode;
+}> = ({ to, isActive, children }) => {
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center justify-center w-full py-1 transition-colors duration-200 ${
-        isActive ? "text-blue-400" : "text-gray-400 hover:text-gray-200"
+      className={`flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
+        isActive
+          ? "text-blue-400 bg-gray-700"
+          : "text-gray-400 hover:text-white hover:bg-gray-700"
       }`}
     >
       {children}
