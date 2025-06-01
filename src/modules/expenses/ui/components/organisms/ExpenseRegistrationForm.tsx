@@ -79,7 +79,7 @@ const ExpenseRegistrationForm: React.FC = () => {
         subcategoryId:
           data.subcategoryId && data.subcategoryId.trim() !== ""
             ? data.subcategoryId
-            : undefined,
+            : "",
         isCardPayment: data.isCardPayment,
         note: data.note && data.note.trim() !== "" ? data.note : undefined,
         date: new Date(),
