@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { EXPENSES } from "@/common/consts/pages-urls";
+import { Link, useNavigate } from "react-router-dom";
+import { EXPENSES, getExpenseEditUrl } from "@/common/consts/pages-urls";
 import { useExpensesQuery } from "@/expenses/infrastructure/react-adapters/useExpensesQuery";
 import { useCategoriesQuery } from "@/expenses/infrastructure/react-adapters/useCategoriesQuery";
 import { ExpensesStatsService } from "@/expenses/domain/services/ExpensesStatsService";
@@ -234,10 +234,6 @@ const ExpensesList = ({
   }
 
   // Calcular estadísticas totales
-  const totalAmount = expenses.reduce(
-    (sum, expense) => sum + expense.amount,
-    0
-  );
   const currentMonth = new Date();
   const currentMonthExpenses = expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
@@ -250,6 +246,31 @@ const ExpensesList = ({
     (sum, expense) => sum + expense.amount,
     0
   );
+
+  // Calcular estadísticas del mes anterior
+  const previousMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() - 1
+  );
+  const previousMonthExpenses = expenses.filter((expense) => {
+    const expenseDate = new Date(expense.date);
+    return (
+      expenseDate.getMonth() === previousMonth.getMonth() &&
+      expenseDate.getFullYear() === previousMonth.getFullYear()
+    );
+  });
+  const previousMonthTotal = previousMonthExpenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+  );
+
+  // Separar gastos en efectivo vs tarjeta (este mes)
+  const currentMonthCash = currentMonthExpenses
+    .filter((expense) => !expense.isCardPayment)
+    .reduce((sum, expense) => sum + expense.amount, 0);
+  const currentMonthCard = currentMonthExpenses
+    .filter((expense) => expense.isCardPayment)
+    .reduce((sum, expense) => sum + expense.amount, 0);
 
   // Calcular estadísticas del mes actual
   const monthlyStats = ExpensesStatsService.calculateMonthlyStats(
@@ -284,24 +305,64 @@ const ExpensesList = ({
       {/* Resumen de estadísticas */}
       <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
         <h3 className="text-white font-semibold mb-3">📊 Resumen</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <p className="text-gray-400 text-sm">Este mes</p>
-            <p className="text-white font-bold text-xl">
-              {ExpensesStatsService.formatCurrency(currentMonthTotal)}
-            </p>
+
+        {/* Desglose por método de pago este mes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-green-400 text-sm font-medium">
+                💸 Efectivo
+              </span>
+              <span className="text-white font-semibold text-lg">
+                {ExpensesStatsService.formatCurrency(currentMonthCash)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-400">Este mes</div>
           </div>
-          <div className="text-center">
-            <p className="text-gray-400 text-sm">Total histórico</p>
-            <p className="text-white font-bold text-xl">
-              {ExpensesStatsService.formatCurrency(totalAmount)}
-            </p>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-orange-400 text-sm font-medium">
+                💳 Tarjeta
+              </span>
+              <span className="text-white font-semibold text-lg">
+                {ExpensesStatsService.formatCurrency(currentMonthCard)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-400">Este mes</div>
           </div>
         </div>
-        <div className="mt-3 text-center">
+
+        <div className="text-center">
           <p className="text-gray-400 text-sm">
+            Total este mes:{" "}
+            <span className="text-white font-semibold">
+              {ExpensesStatsService.formatCurrency(currentMonthTotal)}
+            </span>
+          </p>
+          <p className="text-gray-500 text-xs mt-1">
             {expenses.length} gasto{expenses.length !== 1 ? "s" : ""} registrado
-            {expenses.length !== 1 ? "s" : ""}
+            {expenses.length !== 1 ? "s" : ""} • Mes anterior:{" "}
+            {ExpensesStatsService.formatCurrency(previousMonthTotal)}
+            {previousMonthTotal > 0 && (
+              <span
+                className={`ml-2 ${
+                  currentMonthTotal > previousMonthTotal
+                    ? "text-red-400"
+                    : currentMonthTotal < previousMonthTotal
+                    ? "text-green-400"
+                    : "text-gray-400"
+                }`}
+              >
+                {currentMonthTotal > previousMonthTotal
+                  ? "↑"
+                  : currentMonthTotal < previousMonthTotal
+                  ? "↓"
+                  : "→"}
+                {ExpensesStatsService.formatCurrency(
+                  Math.abs(currentMonthTotal - previousMonthTotal)
+                )}
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -383,6 +444,7 @@ const ExpensesList = ({
                   return (
                     <ExpenseItem
                       key={expense.id}
+                      id={expense.id || ""}
                       title={
                         expense.note ||
                         subcategory?.name ||
@@ -408,6 +470,7 @@ const ExpensesList = ({
 
 // Componente para cada ítem de gasto
 const ExpenseItem = ({
+  id,
   title,
   category,
   date,
@@ -415,6 +478,7 @@ const ExpenseItem = ({
   icon,
   isCardPayment,
 }: {
+  id: string;
   title: string;
   category: string;
   date: string;
@@ -423,12 +487,22 @@ const ExpenseItem = ({
   isCardPayment: boolean;
 }) => {
   const { syncState } = useSyncState();
+  const navigate = useNavigate();
 
   // Check if this expense is pending sync (simplified check by checking if it's from today and there are pending items)
   const isPendingSync = (syncState?.pendingCount ?? 0) > 0 && date === "Hoy";
 
+  const handleClick = () => {
+    if (id && id.trim() !== "") {
+      navigate(getExpenseEditUrl(id));
+    }
+  };
+
   return (
-    <div className="bg-gray-700 rounded-lg p-3 flex items-center hover:bg-gray-600 transition-colors">
+    <div
+      className="bg-gray-700 rounded-lg p-3 flex items-center hover:bg-gray-600 transition-colors cursor-pointer touch-manipulation"
+      onClick={handleClick}
+    >
       <div className="rounded-full bg-gray-600 p-2 mr-3 flex-shrink-0">
         <span className="text-lg">{icon}</span>
       </div>
@@ -440,23 +514,42 @@ const ExpenseItem = ({
         </p>
       </div>
 
-      <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-3">
-        {/* Status and Payment Method Row */}
-        <div className="flex items-center space-x-2">
-          {isPendingSync && (
-            <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
-              ⏳ Pendiente
-            </span>
-          )}
-          {isCardPayment && (
-            <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
-              💳 Tarjeta
-            </span>
-          )}
+      <div className="flex items-center space-x-3">
+        <div className="flex flex-col items-end space-y-1 flex-shrink-0">
+          {/* Status and Payment Method Row */}
+          <div className="flex items-center space-x-2">
+            {isPendingSync && (
+              <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+                ⏳ Pendiente
+              </span>
+            )}
+            {isCardPayment && (
+              <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+                💳 Tarjeta
+              </span>
+            )}
+          </div>
+
+          {/* Amount */}
+          <span className="text-white font-medium text-right">{amount}</span>
         </div>
 
-        {/* Amount */}
-        <span className="text-white font-medium text-right">{amount}</span>
+        {/* Edit indicator */}
+        <div className="text-gray-400 text-sm flex-shrink-0">
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );

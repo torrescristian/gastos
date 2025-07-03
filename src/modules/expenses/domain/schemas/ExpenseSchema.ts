@@ -41,7 +41,7 @@ export const ExpenseSchema = z.object({
     }, "La fecha no puede ser futura"),
 });
 
-// Esquema para el formulario (con string para amount)
+// Esquema para el formulario (con string para amount y date)
 export const ExpenseFormSchema = z.object({
   amount: z
     .string({
@@ -73,6 +73,22 @@ export const ExpenseFormSchema = z.object({
     .string()
     .max(500, "La nota no puede exceder 500 caracteres")
     .optional(),
+
+  date: z
+    .string({
+      required_error: "La fecha es obligatoria",
+    })
+    .min(1, "La fecha es obligatoria")
+    .refine((dateStr) => {
+      const date = new Date(dateStr);
+      return !isNaN(date.getTime());
+    }, "Fecha inválida")
+    .refine((dateStr) => {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      return date <= tomorrow;
+    }, "La fecha no puede ser futura"),
 });
 
 export type ExpenseFormData = z.infer<typeof ExpenseFormSchema>;
