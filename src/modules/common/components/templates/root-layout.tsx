@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 import ErrorBoundary from "../molecules/error-boundary";
-import { EXPENSES, HOME } from "@/common/consts/pages-urls";
+import { HOME } from "@/common/consts/pages-urls";
 
 export default function RootLayout() {
   return (
@@ -19,11 +19,15 @@ export default function RootLayout() {
 const BottomNavigation = () => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const search = location.search;
+  const isHome = currentPath === HOME;
+  const isFilterMode =
+    isHome && new URLSearchParams(search).get("filters") === "1";
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg">
       <div className="flex justify-around items-center h-16">
-        <NavLink to={HOME} isActive={currentPath === HOME}>
+        <NavLink to={HOME} isActive={isHome && !isFilterMode}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -41,7 +45,7 @@ const BottomNavigation = () => {
           <span>Gastos</span>
         </NavLink>
 
-        <NavLink to={EXPENSES} isActive={currentPath === EXPENSES}>
+        <NavLink to={`${HOME}?filters=1`} isActive={isFilterMode}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -53,10 +57,10 @@ const BottomNavigation = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 12.414V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-5.586L3.293 6.707A1 1 0 013 6V4z"
             />
           </svg>
-          <span>Nuevo</span>
+          <span>Filtrar</span>
         </NavLink>
       </div>
     </nav>

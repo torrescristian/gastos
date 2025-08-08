@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  background-color: #1f2937;
+}
+
 /* Custom scrollbar styles for mobile dropdown */
 .scrollbar-thin {
   scrollbar-width: thin;

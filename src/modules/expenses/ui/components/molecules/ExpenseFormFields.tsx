@@ -12,16 +12,23 @@ export const AmountField: React.FC<{
 }> = ({ control, errors }) => (
   <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
     <div className="text-center">
-      <label className="text-gray-400 text-sm block mb-2">💰 Monto</label>
+      <label htmlFor="amount" className="text-gray-400 text-sm block mb-2">
+        💰 Monto
+      </label>
       <Controller
         name="amount"
         control={control}
         render={({ field }) => (
           <CurrencyInput
+            id="amount"
             value={field.value || ""}
-            onChange={(value) =>
-              field.onChange(value === "" ? "" : value.toString())
-            }
+            onChange={(value) => {
+              if (value === "") {
+                field.onChange("");
+              } else {
+                field.onChange(String(value as number));
+              }
+            }}
             placeholder="0"
             className="w-full text-5xl p-4 bg-transparent text-white text-center border-none outline-none shadow-none ring-0 focus-visible:ring-0 focus-visible:border-none"
             showCurrencySymbol={false}
@@ -110,7 +117,9 @@ export const CategoryField: React.FC<{
             setValue("subcategoryId", "");
           }}
           placeholder="Selecciona una categoría"
-          options={categories}
+          options={categories.filter(
+            (c) => !c.isLegacy || c.id.toString() === (field.value || "")
+          )}
           renderSelected={(category: Category) => (
             <>
               <span className="text-xl mr-3">{category.icon}</span>
@@ -177,7 +186,7 @@ export const SubcategoryField: React.FC<{
             value={field.value || ""}
             onChange={(value) => field.onChange(value || "")}
             placeholder="Selecciona una subcategoría (opcional)"
-            options={selectedCategory?.subcategories || []}
+            options={(selectedCategory?.subcategories || []).filter(() => true)}
             renderSelected={(subcategory: Subcategory) => (
               <>
                 <span className="text-lg mr-3">{subcategory.icon}</span>
