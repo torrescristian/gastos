@@ -105,12 +105,6 @@ const newCategories: Category[] = [
       { id: "profesional.otros", name: "Otros", icon: "💰" },
     ],
   },
-  {
-    id: "otros",
-    name: "Otros",
-    icon: "📦",
-    subcategories: [],
-  },
 ];
 
 // Legacy categories preserved for data consistency but hidden from new selections
