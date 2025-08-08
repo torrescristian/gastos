@@ -39,7 +39,7 @@ const newCategories: Category[] = [
       { id: "servicios.gimnasio", name: "Gimnasio", icon: "🏋️" },
       { id: "servicios.seguros", name: "Seguros", icon: "🛡️" },
       { id: "servicios.educacion", name: "Educación", icon: "📚" },
-      { id: "servicios.transporte", name: "Profesional/Trabajo", icon: "💼" },
+      { id: "servicios.profesional", name: "Profesional/Trabajo", icon: "💼" },
       { id: "servicios.otros", name: "Otros", icon: "💰" },
     ],
   },
