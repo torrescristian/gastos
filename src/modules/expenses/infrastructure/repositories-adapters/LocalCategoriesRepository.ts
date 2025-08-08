@@ -21,6 +21,7 @@ const newCategories: Category[] = [
       { id: "compras.hogar", name: "Hogar", icon: "🏠" },
       { id: "compras.mascotas", name: "Mascotas", icon: "🐾" },
       { id: "compras.regalos", name: "Regalos/Donaciones", icon: "🎁" },
+      { id: "compras.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -38,6 +39,8 @@ const newCategories: Category[] = [
       { id: "servicios.gimnasio", name: "Gimnasio", icon: "🏋️" },
       { id: "servicios.seguros", name: "Seguros", icon: "🛡️" },
       { id: "servicios.educacion", name: "Educación", icon: "📚" },
+      { id: "servicios.transporte", name: "Profesional/Trabajo", icon: "💼" },
+      { id: "servicios.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -49,6 +52,7 @@ const newCategories: Category[] = [
       { id: "mantenimiento.hogar", name: "Hogar", icon: "🏠" },
       { id: "mantenimiento.electro", name: "Electrodomésticos", icon: "🔧" },
       { id: "mantenimiento.personal", name: "Personal", icon: "✂️" },
+      { id: "mantenimiento.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -64,6 +68,7 @@ const newCategories: Category[] = [
         name: "Estacionamiento/Peajes",
         icon: "🅿️",
       },
+      { id: "movilidad.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -74,6 +79,7 @@ const newCategories: Category[] = [
       { id: "salud.medicamentos", name: "Medicamentos", icon: "💊" },
       { id: "salud.consultas", name: "Consultas", icon: "👨‍⚕️" },
       { id: "salud.terapias", name: "Terapias", icon: "💆‍♂️" },
+      { id: "salud.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -85,6 +91,7 @@ const newCategories: Category[] = [
       { id: "finanzas.prestamos", name: "Préstamos", icon: "💸" },
       { id: "finanzas.tarjeta", name: "Tarjeta (pago)", icon: "💳" },
       { id: "finanzas.impuestos", name: "Impuestos/Tasas", icon: "🧾" },
+      { id: "finanzas.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
@@ -95,6 +102,7 @@ const newCategories: Category[] = [
       { id: "profesional.materiales", name: "Materiales", icon: "📦" },
       { id: "profesional.herramientas", name: "Herramientas", icon: "🛠️" },
       { id: "profesional.cursos", name: "Cursos", icon: "🎓" },
+      { id: "profesional.otros", name: "Otros", icon: "💰" },
     ],
   },
   {
