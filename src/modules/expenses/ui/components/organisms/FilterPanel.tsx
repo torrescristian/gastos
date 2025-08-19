@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Category } from "@/expenses/domain/entities/Category";
 
 interface FilterPanelProps {
@@ -33,72 +34,148 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilterTo,
   onClearFilters,
 }) => {
-  const handleSelectAllCategories = () => {
-    setFilterCategoryId("");
-    setFilterSubcategoryId("");
+  const [showAdvancedDates, setShowAdvancedDates] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+
+  // Establecer mes actual por defecto
+  useEffect(() => {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}`;
+    setSelectedMonth(currentMonth);
+
+    // Si no hay fechas personalizadas, establecer el mes actual
+    if (!filterFrom && !filterTo) {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      setFilterFrom(firstDay.toISOString().split("T")[0]);
+      setFilterTo(lastDay.toISOString().split("T")[0]);
+    }
+  }, []);
+
+  const handleMonthChange = (monthValue: string) => {
+    setSelectedMonth(monthValue);
+    if (monthValue) {
+      const [year, month] = monthValue.split("-");
+      const firstDay = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const lastDay = new Date(parseInt(year), parseInt(month), 0);
+      setFilterFrom(firstDay.toISOString().split("T")[0]);
+      setFilterTo(lastDay.toISOString().split("T")[0]);
+    }
   };
 
-  const handleSelectAllSubcategories = () => {
-    setFilterSubcategoryId("");
+  const toggleAdvancedDates = () => {
+    setShowAdvancedDates(!showAdvancedDates);
   };
-
-  const handleSelectAllPaymentMethods = () => {
-    setFilterMethod("all");
-  };
-
   return (
     <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-6">
       <h3 className="text-white font-semibold mb-3">Filtros</h3>
 
-      {/* Fechas en la misma fila */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {/* Fecha desde */}
-        <div>
-          <label
-            htmlFor="filter-from"
-            className="block text-xs text-gray-400 mb-1"
-          >
-            Desde
-          </label>
-          <input
-            id="filter-from"
-            type="date"
-            value={filterFrom}
-            onChange={(e) => setFilterFrom(e.target.value)}
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
-          />
-        </div>
+      {/* Toggle entre vista mensual y avanzada */}
+      <div className="mb-4">
+        <label className="block text-xs text-gray-400 mb-2">Período</label>
 
-        {/* Fecha hasta */}
-        <div>
-          <label
-            htmlFor="filter-to"
-            className="block text-xs text-gray-400 mb-1"
-          >
-            Hasta
-          </label>
-          <input
-            id="filter-to"
-            type="date"
-            value={filterTo}
-            onChange={(e) => setFilterTo(e.target.value)}
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
-          />
-        </div>
+        {/* Vista mensual (por defecto) */}
+        {!showAdvancedDates && (
+          <div className="space-y-2">
+            <select
+              value={selectedMonth}
+              onChange={(e) => handleMonthChange(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+            >
+              <option value="">Seleccionar mes</option>
+              {/* Últimos 12 meses */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+                const monthName = date.toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "long",
+                });
+                return (
+                  <option key={monthKey} value={monthKey}>
+                    {monthName}
+                  </option>
+                );
+              })}
+            </select>
+
+            <button
+              type="button"
+              onClick={toggleAdvancedDates}
+              className="w-full px-3 py-2 text-xs text-blue-400 hover:text-blue-300 border border-blue-400 rounded hover:bg-blue-400/10 transition-colors"
+            >
+              Usar fechas específicas
+            </button>
+          </div>
+        )}
+
+        {/* Vista avanzada (fechas personalizadas) */}
+        {showAdvancedDates && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Fecha desde */}
+              <div>
+                <label
+                  htmlFor="filter-from"
+                  className="block text-xs text-gray-400 mb-1"
+                >
+                  Desde
+                </label>
+                <input
+                  id="filter-from"
+                  type="date"
+                  value={filterFrom}
+                  onChange={(e) => setFilterFrom(e.target.value)}
+                  className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+                />
+              </div>
+
+              {/* Fecha hasta */}
+              <div>
+                <label
+                  htmlFor="filter-to"
+                  className="block text-xs text-gray-400 mb-1"
+                >
+                  Hasta
+                </label>
+                <input
+                  id="filter-to"
+                  type="date"
+                  value={filterTo}
+                  onChange={(e) => setFilterTo(e.target.value)}
+                  className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleAdvancedDates}
+              className="w-full px-3 py-2 text-xs text-blue-400 hover:text-blue-300 border border-blue-400 rounded hover:bg-blue-400/10 transition-colors"
+            >
+              Volver a selección por mes
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Texto de búsqueda */}
+      {/* Búsqueda en notas */}
       <div className="mb-4">
         <label
           htmlFor="filter-text"
           className="block text-xs text-gray-400 mb-1"
         >
-          Texto
+          Buscar en notas
         </label>
         <input
           id="filter-text"
           type="text"
-          placeholder="Buscar en notas..."
+          placeholder="Ej: compra semanal, cena con amigos, viaje..."
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
@@ -107,15 +184,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {/* Métodos de pago como badges */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <label className="block text-xs text-gray-400">Método de Pago</label>
-          <button
-            type="button"
-            onClick={handleSelectAllPaymentMethods}
-            className="text-xs text-blue-400 hover:text-blue-300"
-          >
-            Seleccionar todos
-          </button>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -156,15 +226,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {/* Categorías como badges */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <label className="block text-xs text-gray-400">Categoría</label>
-          <button
-            type="button"
-            onClick={handleSelectAllCategories}
-            className="text-xs text-blue-400 hover:text-blue-300"
-          >
-            Seleccionar todas
-          </button>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -203,15 +266,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {/* Subcategorías como badges (solo si hay categoría seleccionada) */}
       {filterCategoryId && (
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <label className="block text-xs text-gray-400">Subcategoría</label>
-            <button
-              type="button"
-              onClick={handleSelectAllSubcategories}
-              className="text-xs text-blue-400 hover:text-blue-300"
-            >
-              Seleccionar todas
-            </button>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
