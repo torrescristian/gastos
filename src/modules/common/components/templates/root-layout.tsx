@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 import ErrorBoundary from "../molecules/error-boundary";
-import { HOME } from "@/common/consts/pages-urls";
+import { HOME, EXPENSES_FILTER } from "@/common/consts/pages-urls";
 
 export default function RootLayout() {
   return (
@@ -19,15 +19,13 @@ export default function RootLayout() {
 const BottomNavigation = () => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const search = location.search;
   const isHome = currentPath === HOME;
-  const isFilterMode =
-    isHome && new URLSearchParams(search).get("filters") === "1";
+  const isFilterPage = currentPath === EXPENSES_FILTER;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg">
       <div className="flex justify-around items-center h-16">
-        <NavLink to={HOME} isActive={isHome && !isFilterMode}>
+        <NavLink to={HOME} isActive={isHome}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -45,7 +43,7 @@ const BottomNavigation = () => {
           <span>Gastos</span>
         </NavLink>
 
-        <NavLink to={`${HOME}?filters=1`} isActive={isFilterMode}>
+        <NavLink to={EXPENSES_FILTER} isActive={isFilterPage}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"

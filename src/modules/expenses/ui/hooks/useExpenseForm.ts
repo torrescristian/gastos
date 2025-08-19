@@ -3,15 +3,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 
-import { useCategoriesQuery } from "@/expenses/infrastructure/react-adapters/useCategoriesQuery";
-import { useCreateExpenseMutation } from "@/expenses/infrastructure/react-adapters/useCreateExpenseMutation";
-import { useUpdateExpenseMutation } from "@/expenses/infrastructure/react-adapters/useUpdateExpenseMutation";
+import { HOME } from "@/common/consts/pages-urls";
+
+import { useCategoriesQuery } from "../../infrastructure/react-adapters/useCategoriesQuery";
+import { useCreateExpenseMutation } from "../../infrastructure/react-adapters/useCreateExpenseMutation";
+import { useUpdateExpenseMutation } from "../../infrastructure/react-adapters/useUpdateExpenseMutation";
 import {
   ExpenseFormSchema,
   ExpenseFormData,
-} from "@/expenses/domain/schemas/ExpenseSchema";
-import { Expense } from "@/expenses/domain/entities/Expense";
-import { HOME } from "@/common/consts/pages-urls";
+} from "../../domain/schemas/ExpenseSchema";
+import { Expense } from "../../domain/entities/Expense";
 
 interface ToastState {
   show: boolean;

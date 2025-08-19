@@ -250,22 +250,60 @@ describe("CreateExpenseUseCase", () => {
       expect(mockExpensesRepository.create).not.toHaveBeenCalled();
     });
 
-    it("should throw validation error for future date", async () => {
+    it("should accept future dates", async () => {
       const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 2); // More than 24h buffer
+      futureDate.setDate(futureDate.getDate() + 30); // 30 days in the future
 
-      const invalidExpenseData = {
+      const validExpenseData = {
         amount: 100,
         categoryId: "1",
         subcategoryId: "sub1",
         isCardPayment: true,
         date: futureDate,
+        note: "Future expense",
       } as ExpenseData;
 
-      await expect(useCase.execute(invalidExpenseData)).rejects.toThrow(
-        ZodError
-      );
-      expect(mockExpensesRepository.create).not.toHaveBeenCalled();
+      const expectedExpense: Expense = {
+        id: "mock-id",
+        ...validExpenseData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(mockExpensesRepository.create).mockResolvedValue(expectedExpense);
+
+      const result = await useCase.execute(validExpenseData);
+
+      expect(mockExpensesRepository.create).toHaveBeenCalledWith(validExpenseData);
+      expect(result).toEqual(expectedExpense);
+    });
+
+    it("should accept past dates", async () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 30); // 30 days in the past
+
+      const validExpenseData = {
+        amount: 150,
+        categoryId: "2",
+        subcategoryId: "sub2",
+        isCardPayment: false,
+        date: pastDate,
+        note: "Past expense",
+      } as ExpenseData;
+
+      const expectedExpense: Expense = {
+        id: "mock-id-2",
+        ...validExpenseData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(mockExpensesRepository.create).mockResolvedValue(expectedExpense);
+
+      const result = await useCase.execute(validExpenseData);
+
+      expect(mockExpensesRepository.create).toHaveBeenCalledWith(validExpenseData);
+      expect(result).toEqual(expectedExpense);
     });
 
     it("should throw validation error for note too long", async () => {

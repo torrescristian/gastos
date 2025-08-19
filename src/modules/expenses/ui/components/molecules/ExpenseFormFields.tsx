@@ -223,7 +223,7 @@ export const DateField: React.FC<{
   control: Control<ExpenseFormData>;
   errors: FieldErrors<ExpenseFormData>;
   mode: "create" | "edit";
-}> = ({ control, errors, mode }) => (
+}> = ({ control, errors }) => (
   <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
     <h3 className="text-white font-semibold mb-4">📅 Fecha del gasto</h3>
     <Controller
@@ -233,21 +233,10 @@ export const DateField: React.FC<{
         <input
           {...field}
           type="date"
-          max={new Date().toISOString().split("T")[0]}
-          disabled={mode === "create"}
-          className={`w-full p-3 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none ${
-            mode === "create"
-              ? "bg-gray-600 cursor-not-allowed opacity-75"
-              : "bg-gray-700"
-          }`}
+          className="w-full p-3 text-white bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
         />
       )}
     />
-    {mode === "create" && (
-      <p className="text-gray-400 text-xs mt-2">
-        💡 La fecha se establece automáticamente al momento de crear el gasto
-      </p>
-    )}
     {errors.date && (
       <p className="text-red-400 text-sm mt-2">{errors.date.message}</p>
     )}

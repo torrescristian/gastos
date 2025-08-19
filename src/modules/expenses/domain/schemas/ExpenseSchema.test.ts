@@ -265,21 +265,36 @@ describe("ExpenseSchema", () => {
   });
 
   describe("date validation", () => {
-    it("should reject future dates", () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 2); // More than 24h buffer
+    it("should accept future dates", () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30); // 30 days in the future
 
-      const invalidExpense = {
+      const validExpense = {
         amount: 100,
         categoryId: "1",
         subcategoryId: "sub1",
         isCardPayment: true,
-        date: tomorrow,
+        date: futureDate,
+        note: "Future expense",
       };
 
-      expect(() => ExpenseSchema.parse(invalidExpense)).toThrow(
-        "La fecha no puede ser futura"
-      );
+      expect(() => ExpenseSchema.parse(validExpense)).not.toThrow();
+    });
+
+    it("should accept past dates", () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 30); // 30 days in the past
+
+      const validExpense = {
+        amount: 150,
+        categoryId: "1",
+        subcategoryId: "sub1",
+        isCardPayment: false,
+        date: pastDate,
+        note: "Past expense",
+      };
+
+      expect(() => ExpenseSchema.parse(validExpense)).not.toThrow();
     });
 
     it("should require date", () => {
@@ -475,21 +490,36 @@ describe("ExpenseFormSchema", () => {
       );
     });
 
-    it("should reject future dates", () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 2);
+    it("should accept future dates", () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30);
 
-      const invalidFormData = {
+      const validFormData = {
         amount: "100.00",
         categoryId: "1",
         subcategoryId: "sub1",
         isCardPayment: true,
-        date: tomorrow.toISOString().split("T")[0],
+        date: futureDate.toISOString().split("T")[0],
+        note: "Future expense",
       };
 
-      expect(() => ExpenseFormSchema.parse(invalidFormData)).toThrow(
-        "La fecha no puede ser futura"
-      );
+      expect(() => ExpenseFormSchema.parse(validFormData)).not.toThrow();
+    });
+
+    it("should accept past dates", () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 30);
+
+      const validFormData = {
+        amount: "150.00",
+        categoryId: "2",
+        subcategoryId: "sub2",
+        isCardPayment: false,
+        date: pastDate.toISOString().split("T")[0],
+        note: "Past expense",
+      };
+
+      expect(() => ExpenseFormSchema.parse(validFormData)).not.toThrow();
     });
 
     it("should accept valid date strings", () => {

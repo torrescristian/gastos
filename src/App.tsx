@@ -4,10 +4,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ExpensesPage from "@/expenses/ui/pages/ExpensesPage.tsx";
 import ExpenseEditPage from "@/expenses/ui/pages/ExpenseEditPage.tsx";
 import RootLayout from "@/common/components/templates/root-layout.tsx";
-import { EXPENSES, EXPENSES_EDIT, HOME } from "@/common/consts/pages-urls.ts";
+import {
+  EXPENSES,
+  EXPENSES_EDIT,
+  EXPENSES_FILTER,
+  HOME,
+} from "@/common/consts/pages-urls.ts";
 
 import PWABadge from "./PWABadge.tsx";
-import HomePage from "@/home/pages/HomePage.tsx";
+import ExpensesListPage from "@/home/pages/ExpensesListPage.tsx";
+import ExpensesFilterPage from "@/home/pages/ExpensesFilterPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +24,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: HOME,
-        element: <HomePage />,
+        element: <ExpensesListPage />,
+      },
+      {
+        path: EXPENSES_FILTER,
+        element: <ExpensesFilterPage />,
       },
       {
         path: EXPENSES,

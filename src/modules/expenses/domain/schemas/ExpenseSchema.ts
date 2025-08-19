@@ -33,16 +33,10 @@ export const ExpenseSchema = z.object({
     .optional()
     .nullable(),
 
-  date: z
-    .date({
-      required_error: "La fecha es obligatoria",
-      invalid_type_error: "Fecha inválida",
-    })
-    .refine((date) => {
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Add 24 hours buffer
-      return date <= tomorrow;
-    }, "La fecha no puede ser futura"),
+  date: z.date({
+    required_error: "La fecha es obligatoria",
+    invalid_type_error: "Fecha inválida",
+  }),
 });
 
 // Esquema para el formulario (con string para amount y date)
@@ -86,13 +80,7 @@ export const ExpenseFormSchema = z.object({
     .refine((dateStr) => {
       const date = new Date(dateStr);
       return !isNaN(date.getTime());
-    }, "Fecha inválida")
-    .refine((dateStr) => {
-      const date = new Date(dateStr);
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      return date <= tomorrow;
-    }, "La fecha no puede ser futura"),
+    }, "Fecha inválida"),
 });
 
 export type ExpenseFormData = z.infer<typeof ExpenseFormSchema>;
