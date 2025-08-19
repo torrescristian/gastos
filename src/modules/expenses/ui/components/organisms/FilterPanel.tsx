@@ -52,7 +52,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       setFilterFrom(firstDay.toISOString().split("T")[0]);
       setFilterTo(lastDay.toISOString().split("T")[0]);
     }
-  }, []);
+  }, [filterFrom, filterTo, setFilterFrom, setFilterTo]);
 
   const handleMonthChange = (monthValue: string) => {
     setSelectedMonth(monthValue);
