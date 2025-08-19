@@ -1,4 +1,3 @@
-import React from "react";
 import { Category } from "@/expenses/domain/entities/Category";
 
 interface FilterPanelProps {
@@ -34,10 +33,25 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilterTo,
   onClearFilters,
 }) => {
+  const handleSelectAllCategories = () => {
+    setFilterCategoryId("");
+    setFilterSubcategoryId("");
+  };
+
+  const handleSelectAllSubcategories = () => {
+    setFilterSubcategoryId("");
+  };
+
+  const handleSelectAllPaymentMethods = () => {
+    setFilterMethod("all");
+  };
+
   return (
     <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-6">
       <h3 className="text-white font-semibold mb-3">Filtros</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+      {/* Fechas en la misma fila */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Fecha desde */}
         <div>
           <label
@@ -71,101 +85,165 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
           />
         </div>
+      </div>
 
-        {/* Método de pago */}
-        <div>
-          <label
-            htmlFor="filter-method"
-            className="block text-xs text-gray-400 mb-1"
+      {/* Texto de búsqueda */}
+      <div className="mb-4">
+        <label
+          htmlFor="filter-text"
+          className="block text-xs text-gray-400 mb-1"
+        >
+          Texto
+        </label>
+        <input
+          id="filter-text"
+          type="text"
+          placeholder="Buscar en notas..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+        />
+      </div>
+
+      {/* Métodos de pago como badges */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-xs text-gray-400">Método de Pago</label>
+          <button
+            type="button"
+            onClick={handleSelectAllPaymentMethods}
+            className="text-xs text-blue-400 hover:text-blue-300"
           >
-            Pago
-          </label>
-          <select
-            id="filter-method"
-            value={filterMethod}
-            onChange={(e) =>
-              setFilterMethod(e.target.value as "all" | "cash" | "card")
-            }
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
-          >
-            <option value="all">Todos</option>
-            <option value="cash">Contado</option>
-            <option value="card">Tarjeta</option>
-          </select>
+            Seleccionar todos
+          </button>
         </div>
-
-        {/* Texto */}
-        <div>
-          <label
-            htmlFor="filter-text"
-            className="block text-xs text-gray-400 mb-1"
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFilterMethod("all")}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+              filterMethod === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
           >
-            Texto
-          </label>
-          <input
-            id="filter-text"
-            type="text"
-            placeholder="Buscar en notas..."
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
-          />
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMethod("cash")}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+              filterMethod === "cash"
+                ? "bg-green-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            💵 Contado
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMethod("card")}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+              filterMethod === "card"
+                ? "bg-orange-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            💳 Tarjeta
+          </button>
         </div>
+      </div>
 
-        {/* Categoría */}
-        <div>
-          <label
-            htmlFor="filter-category"
-            className="block text-xs text-gray-400 mb-1"
+      {/* Categorías como badges */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-xs text-gray-400">Categoría</label>
+          <button
+            type="button"
+            onClick={handleSelectAllCategories}
+            className="text-xs text-blue-400 hover:text-blue-300"
           >
-            Categoría
-          </label>
-          <select
-            id="filter-category"
-            value={filterCategoryId}
-            onChange={(e) => {
-              setFilterCategoryId(e.target.value);
-              setFilterSubcategoryId("");
-            }}
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
-          >
-            <option value="">Todas</option>
-            {categories
-              .filter((c) => !c.isLegacy)
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-          </select>
+            Seleccionar todas
+          </button>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFilterCategoryId("")}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+              filterCategoryId === ""
+                ? "bg-blue-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            Todas
+          </button>
+          {categories
+            .filter((c) => !c.isLegacy)
+            .map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setFilterCategoryId(c.id.toString());
+                  setFilterSubcategoryId("");
+                }}
+                className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                  filterCategoryId === c.id.toString()
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+              >
+                {c.icon} {c.name}
+              </button>
+            ))}
+        </div>
+      </div>
 
-        {/* Subcategoría */}
-        <div>
-          <label
-            htmlFor="filter-subcategory"
-            className="block text-xs text-gray-400 mb-1"
-          >
-            Subcategoría
-          </label>
-          <select
-            id="filter-subcategory"
-            value={filterSubcategoryId}
-            onChange={(e) => setFilterSubcategoryId(e.target.value)}
-            disabled={!filterCategoryId}
-            className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white disabled:opacity-50"
-          >
-            <option value="">Todas</option>
+      {/* Subcategorías como badges (solo si hay categoría seleccionada) */}
+      {filterCategoryId && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs text-gray-400">Subcategoría</label>
+            <button
+              type="button"
+              onClick={handleSelectAllSubcategories}
+              className="text-xs text-blue-400 hover:text-blue-300"
+            >
+              Seleccionar todas
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setFilterSubcategoryId("")}
+              className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                filterSubcategoryId === ""
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Todas
+            </button>
             {categories
               .find((c) => c.id.toString() === filterCategoryId)
               ?.subcategories.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setFilterSubcategoryId(s.id.toString())}
+                  className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                    filterSubcategoryId === s.id.toString()
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  }`}
+                >
+                  {s.icon} {s.name}
+                </button>
               ))}
-          </select>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex justify-end gap-2 mt-4">
         <button
