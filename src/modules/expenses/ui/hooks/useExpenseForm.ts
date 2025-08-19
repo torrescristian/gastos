@@ -122,7 +122,7 @@ export const useExpenseForm = ({
     // Hide toast after 3 seconds
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ ...toast, show: false });
+        setToast((currentToast) => ({ ...currentToast, show: false }));
       }, 3000);
       return () => clearTimeout(timer);
     }

@@ -270,8 +270,6 @@ export default function HomePage() {
           />
         </svg>
       </Link>
-
-      {/* Success Toast ocultado al deshabilitar sync */}
     </div>
   );
 }
@@ -595,11 +593,7 @@ const ExpenseItem = ({
   icon: string;
   isCardPayment: boolean;
 }) => {
-  // sync oculto temporalmente: no usar estado de sync ni etiquetas relacionadas
   const navigate = useNavigate();
-
-  // Sync oculto: no mostrar estado pendiente
-  const isPendingSync = false;
 
   const handleClick = () => {
     if (id && id.trim() !== "") {
@@ -636,11 +630,6 @@ const ExpenseItem = ({
         <div className="flex flex-col items-end space-y-1 flex-shrink-0">
           {/* Status and Payment Method Row */}
           <div className="flex items-center space-x-2">
-            {isPendingSync && (
-              <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
-                ⏳ Pendiente
-              </span>
-            )}
             {isCardPayment && (
               <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
                 💳 Tarjeta

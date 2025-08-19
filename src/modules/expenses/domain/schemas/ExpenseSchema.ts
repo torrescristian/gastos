@@ -16,7 +16,11 @@ export const ExpenseSchema = z.object({
     })
     .min(1, "La categoría es obligatoria"),
 
-  subcategoryId: z.string().min(1, "La subcategoría es obligatoria"),
+  subcategoryId: z
+    .string({
+      required_error: "La subcategoría es obligatoria",
+    })
+    .min(1, "La subcategoría es obligatoria"),
 
   isCardPayment: z.boolean({
     required_error: "El método de pago es obligatorio",

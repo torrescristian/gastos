@@ -44,10 +44,11 @@ export class ExpensesStatsService {
   static calculateMonthlyStats(
     expenses: Expense[],
     categories: Category[],
-    budget?: number
+    budget?: number,
+    currentDate?: Date
   ): MonthlyStats {
     // Filter expenses for current month
-    const now = new Date();
+    const now = currentDate || new Date();
     const currentMonthExpenses = expenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return (
@@ -185,8 +186,8 @@ export class ExpensesStatsService {
     }).format(amount);
   }
 
-  static formatDate(date: Date): string {
-    const now = new Date();
+  static formatDate(date: Date, currentDate?: Date): string {
+    const now = currentDate || new Date();
     const expenseDate = new Date(date);
 
     // Check if it's today
