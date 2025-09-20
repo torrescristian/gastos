@@ -2,17 +2,22 @@ import React from "react";
 import { Link } from "react-router-dom";
 import ExpenseRegistrationForm from "../components/organisms/ExpenseRegistrationForm";
 import { HOME } from "@/common/consts/pages-urls";
+import { useTranslation } from "@/common/hooks/useTranslation";
 
 const ExpensesPage: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="px-4 py-6 min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Registrar Gasto</h1>
+            <h1 className="text-3xl font-bold text-white">
+              {t("registerExpense")}
+            </h1>
             <p className="text-gray-400 mt-1">
-              Añade un nuevo gasto a tu registro
+              {t("addNewExpenseDescription")}
             </p>
           </div>
           <Link
@@ -32,7 +37,7 @@ const ExpensesPage: React.FC = () => {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            <span>Volver</span>
+            <span>{t("goBack")}</span>
           </Link>
         </div>
       </header>

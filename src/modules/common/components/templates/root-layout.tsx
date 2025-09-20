@@ -2,11 +2,19 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 
 import ErrorBoundary from "../molecules/error-boundary";
 import { HOME, EXPENSES_FILTER } from "@/common/consts/pages-urls";
+import { LanguageSelector } from "../molecules/language-selector";
+import { useTranslation } from "@/common/hooks/useTranslation";
 
 export default function RootLayout() {
+  const { t } = useTranslation();
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col min-h-screen bg-gray-900 text-white pb-16">
+        <header className="flex justify-between items-center p-4 bg-gray-800 border-b border-gray-700">
+          <h1 className="text-xl font-semibold">{t("expenses")} App</h1>
+          <LanguageSelector />
+        </header>
         <main className="flex-1">
           <Outlet />
         </main>
@@ -18,6 +26,7 @@ export default function RootLayout() {
 
 const BottomNavigation = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   const currentPath = location.pathname;
   const isHome = currentPath === HOME;
   const isFilterPage = currentPath === EXPENSES_FILTER;
@@ -40,7 +49,7 @@ const BottomNavigation = () => {
               d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             />
           </svg>
-          <span>Gastos</span>
+          <span>{t("expenses")}</span>
         </NavLink>
 
         <NavLink to={EXPENSES_FILTER} isActive={isFilterPage}>
@@ -58,7 +67,7 @@ const BottomNavigation = () => {
               d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 12.414V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-5.586L3.293 6.707A1 1 0 013 6V4z"
             />
           </svg>
-          <span>Filtrar</span>
+          <span>{t("filter")}</span>
         </NavLink>
       </div>
     </nav>

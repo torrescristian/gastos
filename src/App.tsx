@@ -14,6 +14,7 @@ import {
 import PWABadge from "./PWABadge.tsx";
 import ExpensesListPage from "@/home/pages/ExpensesListPage.tsx";
 import ExpensesFilterPage from "@/home/pages/ExpensesFilterPage.tsx";
+import { LanguageProvider } from "@/common/contexts/language-context.tsx";
 
 const queryClient = new QueryClient();
 
@@ -45,8 +46,10 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <PWABadge />
+      <LanguageProvider>
+        <RouterProvider router={router} />
+        <PWABadge />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

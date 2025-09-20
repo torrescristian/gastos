@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Category } from "@/expenses/domain/entities/Category";
+import { useTranslation } from "@/common/hooks/useTranslation";
+import { parseDateFromDisplay } from "@/common/lib/translations";
 
 interface FilterPanelProps {
   categories: Category[];
@@ -34,6 +36,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilterTo,
   onClearFilters,
 }) => {
+  const { t, tCategory, formatDate, language } = useTranslation();
   const [showAdvancedDates, setShowAdvancedDates] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
@@ -71,11 +74,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
   return (
     <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-6">
-      <h3 className="text-white font-semibold mb-3">Filtros</h3>
+      <h3 className="text-white font-semibold mb-3">{t("filters")}</h3>
 
       {/* Toggle entre vista mensual y avanzada */}
       <div className="mb-4">
-        <label className="block text-xs text-gray-400 mb-2">Período</label>
+        <label className="block text-xs text-gray-400 mb-2">
+          {t("period")}
+        </label>
 
         {/* Vista mensual (por defecto) */}
         {!showAdvancedDates && (
@@ -85,7 +90,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               onChange={(e) => handleMonthChange(e.target.value)}
               className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
             >
-              <option value="">Seleccionar mes</option>
+              <option value="">{t("selectMonth")}</option>
               {/* Últimos 12 meses */}
               {Array.from({ length: 12 }, (_, i) => {
                 const date = new Date();
@@ -93,7 +98,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 const year = date.getFullYear();
                 const month = date.getMonth() + 1;
                 const monthKey = `${year}-${String(month).padStart(2, "0")}`;
-                const monthName = date.toLocaleDateString("es-ES", {
+                const locale = language === "en" ? "en-US" : "es-ES";
+                const monthName = date.toLocaleDateString(locale, {
                   year: "numeric",
                   month: "long",
                 });
@@ -110,7 +116,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               onClick={toggleAdvancedDates}
               className="w-full px-3 py-2 text-xs text-blue-400 hover:text-blue-300 border border-blue-400 rounded hover:bg-blue-400/10 transition-colors"
             >
-              Usar fechas específicas
+              {t("useSpecificDates")}
             </button>
           </div>
         )}
@@ -125,14 +131,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   htmlFor="filter-from"
                   className="block text-xs text-gray-400 mb-1"
                 >
-                  Desde
+                  {t("from")}
                 </label>
                 <input
                   id="filter-from"
-                  type="date"
-                  value={filterFrom}
-                  onChange={(e) => setFilterFrom(e.target.value)}
+                  type="text"
+                  value={formatDate(filterFrom)}
+                  onChange={(e) => {
+                    // Parse the display format back to ISO format
+                    const isoDate = e.target.value
+                      ? parseDateFromDisplay(e.target.value, language)
+                      : "";
+                    setFilterFrom(isoDate);
+                  }}
                   className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+                  placeholder={t("dateFormat")}
                 />
               </div>
 
@@ -142,14 +155,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   htmlFor="filter-to"
                   className="block text-xs text-gray-400 mb-1"
                 >
-                  Hasta
+                  {t("to")}
                 </label>
                 <input
                   id="filter-to"
-                  type="date"
-                  value={filterTo}
-                  onChange={(e) => setFilterTo(e.target.value)}
+                  type="text"
+                  value={formatDate(filterTo)}
+                  onChange={(e) => {
+                    // Parse the display format back to ISO format
+                    const isoDate = e.target.value
+                      ? parseDateFromDisplay(e.target.value, language)
+                      : "";
+                    setFilterTo(isoDate);
+                  }}
                   className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
+                  placeholder={t("dateFormat")}
                 />
               </div>
             </div>
@@ -159,7 +179,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               onClick={toggleAdvancedDates}
               className="w-full px-3 py-2 text-xs text-blue-400 hover:text-blue-300 border border-blue-400 rounded hover:bg-blue-400/10 transition-colors"
             >
-              Volver a selección por mes
+              {t("backToMonthSelection")}
             </button>
           </div>
         )}
@@ -171,12 +191,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           htmlFor="filter-text"
           className="block text-xs text-gray-400 mb-1"
         >
-          Buscar en notas
+          {t("searchInNotes")}
         </label>
         <input
           id="filter-text"
           type="text"
-          placeholder="Ej: compra semanal, cena con amigos, viaje..."
+          placeholder={t("searchInNotesPlaceholder")}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"
@@ -186,7 +206,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {/* Métodos de pago como badges */}
       <div className="mb-4">
         <div className="mb-2">
-          <label className="block text-xs text-gray-400">Método de Pago</label>
+          <label className="block text-xs text-gray-400">
+            {t("paymentMethod")}
+          </label>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -198,7 +220,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 : "bg-gray-700 text-gray-300 hover:bg-gray-600"
             }`}
           >
-            Todos
+            {t("all")}
           </button>
           <button
             type="button"
@@ -209,7 +231,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 : "bg-gray-700 text-gray-300 hover:bg-gray-600"
             }`}
           >
-            💵 Contado
+            💵 {t("cash")}
           </button>
           <button
             type="button"
@@ -220,7 +242,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 : "bg-gray-700 text-gray-300 hover:bg-gray-600"
             }`}
           >
-            💳 Tarjeta
+            💳 {t("card")}
           </button>
         </div>
       </div>
@@ -228,7 +250,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {/* Categorías como badges */}
       <div className="mb-4">
         <div className="mb-2">
-          <label className="block text-xs text-gray-400">Categoría</label>
+          <label className="block text-xs text-gray-400">{t("category")}</label>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -240,7 +262,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 : "bg-gray-700 text-gray-300 hover:bg-gray-600"
             }`}
           >
-            Todas
+            {t("all")}
           </button>
           {categories
             .filter((c) => !c.isLegacy)
@@ -258,7 +280,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
               >
-                {c.icon} {c.name}
+                {c.icon} {tCategory(c.name)}
               </button>
             ))}
         </div>
@@ -268,7 +290,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {filterCategoryId && (
         <div className="mb-4">
           <div className="mb-2">
-            <label className="block text-xs text-gray-400">Subcategoría</label>
+            <label className="block text-xs text-gray-400">
+              {t("subcategory")}
+            </label>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -280,7 +304,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Todas
+              {t("all")}
             </button>
             {categories
               .find((c) => c.id.toString() === filterCategoryId)
@@ -295,7 +319,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                   }`}
                 >
-                  {s.icon} {s.name}
+                  {s.icon} {tCategory(s.name)}
                 </button>
               ))}
           </div>
@@ -308,7 +332,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           onClick={onClearFilters}
           className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-200"
         >
-          Limpiar filtros
+          {t("clearFilters")}
         </button>
       </div>
     </div>

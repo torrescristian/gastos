@@ -4,8 +4,10 @@ import { useExpensesFilter } from "@/expenses/ui/hooks/useExpensesFilter";
 import ExpensesList from "@/expenses/ui/components/organisms/ExpensesList";
 import FilterPanel from "@/expenses/ui/components/organisms/FilterPanel";
 import PageHeader from "@/expenses/ui/components/molecules/PageHeader";
+import { useTranslation } from "@/common/hooks/useTranslation";
 
 export default function ExpensesFilterPage() {
+  const { t } = useTranslation();
   const { data: expenses = [], isLoading: expensesLoading } =
     useExpensesQuery();
   const { data: categories = [], isLoading: categoriesLoading } =
@@ -22,7 +24,7 @@ export default function ExpensesFilterPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center text-white">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-            <p>Cargando gastos...</p>
+            <p>{t("loadingExpenses")}</p>
           </div>
         </div>
       </div>
@@ -32,8 +34,8 @@ export default function ExpensesFilterPage() {
   return (
     <div className="px-4 py-6 min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       <PageHeader
-        title="Filtrar Gastos"
-        subtitle="Busca y filtra tu historial de gastos"
+        title={t("filterExpenses")}
+        subtitle={t("searchAndFilterDescription")}
         showAddButton={true}
       />
 

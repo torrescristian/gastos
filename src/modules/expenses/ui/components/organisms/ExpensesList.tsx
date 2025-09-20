@@ -4,6 +4,7 @@ import { Expense } from "@/expenses/domain/entities/Expense";
 import { Category } from "@/expenses/domain/entities/Category";
 import { ExpensesStatsService } from "@/expenses/domain/services/ExpensesStatsService";
 import { getExpenseEditUrl } from "@/common/consts/pages-urls";
+import { useTranslation } from "@/common/hooks/useTranslation";
 
 interface ExpensesListProps {
   expenses: Expense[];
@@ -18,12 +19,13 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
   isLoading,
   showAnalysis = true,
 }) => {
+  const { t, language } = useTranslation();
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-          <p>Cargando gastos...</p>
+          <p>{t("loadingExpenses")}</p>
         </div>
       </div>
     );
@@ -36,12 +38,10 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
       <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 text-center">
         <div className="text-gray-400 text-6xl mb-4">📝</div>
         <h3 className="text-white text-lg font-semibold mb-2">
-          {isFilterMode ? "Sin resultados" : "No hay gastos registrados"}
+          {isFilterMode ? t("noResults") : t("noExpensesRegistered")}
         </h3>
         <p className="text-gray-400 mb-6">
-          {isFilterMode
-            ? "Ajusta los filtros para encontrar lo que buscas"
-            : "Comienza registrando tu primer gasto"}
+          {isFilterMode ? t("adjustFilters") : t("startRegistering")}
         </p>
       </div>
     );
@@ -100,10 +100,13 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
     ) => {
       const date = new Date(expense.date);
       const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-      const monthName = date.toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "long",
-      });
+      const monthName = date.toLocaleDateString(
+        language === "en" ? "en-US" : "es-ES",
+        {
+          year: "numeric",
+          month: "long",
+        }
+      );
 
       if (!acc[monthKey]) {
         acc[monthKey] = {
@@ -125,46 +128,44 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
       {/* Resumen de estadísticas */}
       {showAnalysis && (
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 className="text-white font-semibold mb-3">📊 Resumen</h3>
+          <h3 className="text-white font-semibold mb-3">📊 {t("summary")}</h3>
 
           {/* Desglose por método de pago este mes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div className="bg-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-green-400 text-sm font-medium">
-                  💸 Efectivo
+                  💸 {t("cash")}
                 </span>
                 <span className="text-white font-semibold text-lg">
                   {ExpensesStatsService.formatCurrency(currentMonthCash)}
                 </span>
               </div>
-              <div className="text-xs text-gray-400">Este mes</div>
+              <div className="text-xs text-gray-400">{t("thisMonth")}</div>
             </div>
             <div className="bg-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-orange-400 text-sm font-medium">
-                  💳 Tarjeta
+                  💳 {t("card")}
                 </span>
                 <span className="text-white font-semibold text-lg">
                   {ExpensesStatsService.formatCurrency(currentMonthCard)}
                 </span>
               </div>
-              <div className="text-xs text-gray-400">Este mes</div>
+              <div className="text-xs text-gray-400">{t("thisMonth")}</div>
             </div>
           </div>
 
           <div className="text-center">
             <p className="text-gray-400 text-sm">
-              Total este mes:{" "}
+              {t("totalThisMonth")}:{" "}
               <span className="text-white font-semibold">
                 {ExpensesStatsService.formatCurrency(currentMonthTotal)}
               </span>
             </p>
             <p className="text-gray-500 text-xs mt-1">
-              {expenses.length} gasto{expenses.length !== 1 ? "s" : ""}{" "}
-              registrado
-              {expenses.length !== 1 ? "s" : ""} • Mes anterior:{" "}
-              {ExpensesStatsService.formatCurrency(previousMonthTotal)}
+              {expenses.length} {t("registeredExpenses")} • {t("previousMonth")}
+              : {ExpensesStatsService.formatCurrency(previousMonthTotal)}
               {previousMonthTotal > 0 &&
                 (() => {
                   const trendUp = currentMonthTotal > previousMonthTotal;
@@ -196,7 +197,7 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
       {showAnalysis && monthlyStats.subcategoryBreakdown.length > 0 && (
         <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <h3 className="text-white font-semibold mb-3">
-            🏷️ Subcategorías este mes
+            🏷️ {t("subcategoriesThisMonth")}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {monthlyStats.subcategoryBreakdown.map((subData) => (
@@ -256,8 +257,10 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
                       {ExpensesStatsService.formatCurrency(monthData.total)}
                     </span>
                     <p className="text-gray-400 text-sm">
-                      {monthData.expenses.length} gasto
-                      {monthData.expenses.length !== 1 ? "s" : ""}
+                      {monthData.expenses.length}{" "}
+                      {monthData.expenses.length !== 1
+                        ? t("registeredExpenses")
+                        : t("expense")}
                     </p>
                   </div>
                 </div>
@@ -281,15 +284,16 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
                         expense.note ||
                         subcategory?.name ||
                         category?.name ||
-                        "Gasto"
+                        t("expense")
                       }
-                      category={category?.name || "Desconocida"}
+                      category={category?.name || t("unknown")}
                       date={ExpensesStatsService.formatDate(expense.date)}
                       amount={ExpensesStatsService.formatCurrency(
                         expense.amount
                       )}
                       icon={subcategory?.icon || category?.icon || "💰"}
                       isCardPayment={expense.isCardPayment}
+                      t={t}
                     />
                   );
                 })}
@@ -310,6 +314,7 @@ const ExpenseItem = ({
   amount,
   icon,
   isCardPayment,
+  t,
 }: {
   id: string;
   title: string;
@@ -318,6 +323,7 @@ const ExpenseItem = ({
   amount: string;
   icon: string;
   isCardPayment: boolean;
+  t: (key: string) => string;
 }) => {
   const navigate = useNavigate();
 
@@ -358,7 +364,7 @@ const ExpenseItem = ({
           <div className="flex items-center space-x-2">
             {isCardPayment && (
               <span className="text-xs bg-orange-900/30 text-orange-400 px-1.5 py-0.5 rounded whitespace-nowrap">
-                💳 Tarjeta
+                💳 {t("card")}
               </span>
             )}
           </div>
