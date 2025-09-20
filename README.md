@@ -1,106 +1,106 @@
-# Gastos App 📱
+# Expenses App 📱
 
-Una aplicación web progresiva (PWA) para el registro y seguimiento de gastos personales, construida con React, TypeScript y Tailwind CSS.
+A Progressive Web App (PWA) for recording and tracking personal expenses, built with React, TypeScript and Tailwind CSS.
 
-## 🚀 Características Principales
+## 🚀 Main Features
 
-- **Registro de Gastos**: Agrega gastos con monto, categoría, subcategoría y notas
-- **Categorización**: Sistema flexible de categorías y subcategorías
-- **Pagos con Tarjeta**: Marca gastos como pagos con tarjeta para mejor seguimiento
-- **Sincronización**: Sincronización automática con el servidor
-- **PWA**: Instalable como aplicación nativa en dispositivos móviles
-- **Offline First**: Funciona sin conexión a internet
-- **Diseño Responsivo**: Interfaz optimizada para móviles y escritorio
+- **Expense Recording**: Add expenses with amount, category, subcategory and notes
+- **Categorization**: Flexible system of categories and subcategories
+- **Card Payments**: Mark expenses as card payments for better tracking
+- **Synchronization**: Automatic synchronization with server
+- **PWA**: Installable as native app on mobile devices
+- **Offline First**: Works without internet connection
+- **Responsive Design**: Interface optimized for mobile and desktop
 
-## 🛠️ Tecnologías
+## 🛠️ Technologies
 
 - **Frontend**: React + TypeScript
-- **Estilos**: Tailwind CSS
-- **Estado**: React Query + Zustand
-- **Formularios**: React Hook Form + Zod
+- **Styling**: Tailwind CSS
+- **State**: React Query + Zustand
+- **Forms**: React Hook Form + Zod
 - **UI Components**: Headless UI
-- **Iconos**: Heroicons
+- **Icons**: Heroicons
 - **PWA**: Vite PWA
 
-## 📦 Instalación
+## 📦 Installation
 
-1. Clona el repositorio:
+1. Clone the repository:
 ```bash
-git clone https://github.com/tu-usuario/gastos.git
+git clone https://github.com/torrescristian/gastos.git
 cd gastos
 ```
 
-2. Instala las dependencias:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Inicia el servidor de desarrollo:
+3. Start development server:
 ```bash
 npm run dev
 ```
 
-4. Abre [http://localhost:5173](http://localhost:5173) en tu navegador
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
-## 🏗️ Estructura del Proyecto
+## 🏗️ Project Structure
 
 ```
 src/
 ├── modules/
-│   ├── common/          # Componentes y utilidades compartidas
-│   ├── expenses/        # Módulo de gastos
-│   │   ├── domain/      # Entidades y lógica de negocio
-│   │   ├── infrastructure/ # Adaptadores y servicios
-│   │   └── ui/          # Componentes de interfaz
-│   └── categories/      # Módulo de categorías
-├── common/              # Utilidades globales
-└── main.tsx            # Punto de entrada
+│   ├── common/          # Shared components and utilities
+│   ├── expenses/        # Expenses module
+│   │   ├── domain/      # Entities and business logic
+│   │   ├── infrastructure/ # Adapters and services
+│   │   └── ui/          # Interface components
+│   └── categories/      # Categories module
+├── common/              # Global utilities
+└── main.tsx            # Entry point
 ```
 
-## 🎯 Características Técnicas
+## 🎯 Technical Features
 
-- **Arquitectura Hexagonal**: Separación clara entre dominio, infraestructura y UI
-- **TypeScript**: Tipado estático para mejor mantenibilidad
-- **React Query**: Manejo eficiente de estado del servidor
-- **Zustand**: Estado global simple y eficiente
-- **Tailwind**: Estilos utilitarios para desarrollo rápido
-- **PWA**: Instalable y funcionamiento offline
+- **Hexagonal Architecture**: Clear separation between domain, infrastructure and UI
+- **TypeScript**: Static typing for better maintainability
+- **React Query**: Efficient server state management
+- **Zustand**: Simple and efficient global state
+- **Tailwind**: Utility styles for rapid development
+- **PWA**: Installable and offline functionality
 
-## 📱 Uso
+## 📱 Usage
 
-1. **Registrar un Gasto**:
-   - Ingresa el monto
-   - Selecciona categoría y subcategoría
-   - Marca si es pago con tarjeta
-   - Agrega notas opcionales
-   - Confirma el registro
+1. **Record an Expense**:
+   - Enter the amount
+   - Select category and subcategory
+   - Mark if it's a card payment
+   - Add optional notes
+   - Confirm the registration
 
-2. **Ver Gastos**:
-   - Lista de gastos recientes
-   - Filtrado por categoría
-   - Búsqueda por texto
-   - Ordenamiento por fecha
+2. **View Expenses**:
+   - List of recent expenses
+   - Filter by category
+   - Search by text
+   - Sort by date
 
-3. **Instalar como PWA**:
-   - En iOS: Compartir → "Añadir a Pantalla de Inicio"
-   - En Android: Menú → "Instalar App"
+3. **Install as PWA**:
+   - On iOS: Share → "Add to Home Screen"
+   - On Android: Menu → "Install App"
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para más detalles.
+This project is under the MIT License - see the [LICENSE.md](LICENSE.md) file for more details.
 
-## ✨ Próximas Características
+## ✨ Upcoming Features
 
-- [ ] Gráficos de gastos por categoría
-- [ ] Exportación de datos
-- [ ] Presupuestos mensuales
-- [ ] Recordatorios de pagos
-- [ ] Múltiples monedas
+- [ ] Expense charts by category
+- [ ] Data export
+- [ ] Monthly budgets
+- [ ] Payment reminders
+- [ ] Multiple currencies
